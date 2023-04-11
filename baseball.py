@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import pybaseball as pbb 
+from plotly.subplots import make_subplots
 pbb.cache.enable()
 
 
@@ -136,8 +137,53 @@ for cat in ['Positive', 'Negative', 'Neutral']:
     shograph.add_trace(go.Scatter(x = curr['release_speed'], y = curr['release_spin_rate'],
                               mode = 'markers',
                               name = cat))
-shograph.show()
+shograph.update_layout(
+    title = 'Pitch Velocity vs. Spin Rate by PA Result',
+    xaxis = dict(title='Pitch Velocity'),
+    yaxis = dict(title='Spin Rate')
+)
 
+yu = statcast_lookup("yu","darvish","2022-06-01","2022-07-01")
+PosNeg(yu)
+yugraph = go.Figure()
+
+for cat in ['Positive', 'Negative', 'Neutral']:
+    curr = sho[sho['Pos/Neg/Neu'] == cat]
+
+    yugraph.add_trace(go.Scatter(x = curr['release_speed'], y = curr['release_spin_rate'],
+                              mode = 'markers',
+                              name = cat))
+yugraph.update_layout(
+    title = 'Pitch Velocity vs. Spin Rate by PA Result',
+    xaxis = dict(title='Pitch Velocity'),
+    yaxis = dict(title='Spin Rate')
+)
+
+yugraph.show()
+
+
+'''
+def whatINeedToDo(first, last, startdate, enddate):
+    pitcher = statcast_lookup(first, last, startdate, enddate)
+    PosNeg(pitcher)
+    figre = go.Figure
+
+    for cat in ['Positive', 'Negative', 'Neutral']:
+        curr = pitcher[pitcher['Pos/Neg/Neu'] == cat]
+
+        figre.add_trace(go.Scatter(x = curr['release_speed'], y = curr['release_spin_rate'], 
+                                                 mode = 'markers', 
+                                                 name = cat))
+    figre.update_layout(
+        title = 'Pitch Velocity vs. Spin Rate by PA Result',
+        xaxis = dict(title='Pitch Velocity'),
+        yaxis = dict(title='Spin Rate')
+    )
+
+yu = whatINeedToDo('Yu','Darvish','2022-06-01','2022-07-01')
+'''
+###########################################
+###########################################
 '''
 scatter = go.Scatter(
     x = sho['release_speed'],
@@ -162,4 +208,39 @@ fig.show()
 
 #When looking at individual pitchers, you can start to see clusters forming from pitch type.
 '''
+yugraph = go.Figure()
 
+for cat in ['Positive', 'Negative', 'Neutral']:
+    curr = sho[sho['Pos/Neg/Neu'] == cat]
+
+    yugraph.add_trace(go.Scatter(x = curr['release_speed'], y = curr['release_spin_rate'],
+                              mode = 'markers',
+                              name = cat))
+yugraph.update_layout(
+    title = 'Pitch Velocity vs. Spin Rate by PA Result',
+    xaxis = dict(title='Pitch Velocity'),
+    yaxis = dict(title='Spin Rate')
+)
+
+yugraph.show()
+
+p = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=("Plot 1", "Plot 2", "Plot 3", "Plot 4"))
+p.add_trace(go.Scatter(x=sho['release_speed'], y=sho['release_spin_rate'],
+                       mode = 'markers'),
+              row=1, col=1)
+
+p.add_trace(go.Scatter(x=[20, 30, 40], y=[50, 60, 70]),
+           row=1, col=2)
+
+p.add_trace(go.Scatter(x=[300, 400, 500], y=[600, 700, 800]),
+              row=2, col=1)
+
+p.add_trace(go.Scatter(x=[4000, 5000, 6000], y=[7000, 8000, 9000]),
+              row=2, col=2)
+
+p.update_layout(height=500, width=700,
+                  title_text="Multiple Subplots with Titles")
+
+p.show()
