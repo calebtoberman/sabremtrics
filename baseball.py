@@ -85,12 +85,13 @@ def graphPitchers(first, last, startdate, enddate):
 yu = graphPitchers('Yu','Darvish','2022-04-07','2022-10-05')
 yu.show()
 
-
+sho = statcast_lookup("shohei","ohtani","2022-06-01","2022-07-01")
+PosNeg(sho)
 
 
 
 p = make_subplots(
-    rows=3, cols=3,
+    rows=2, cols=3,
     subplot_titles=("4-Seam Fastball", "Sweeper", "Cutter", "Slider",
                     "Curveball", "Split-Finger"),
     shared_xaxes = True,
@@ -98,9 +99,8 @@ p = make_subplots(
 
 currpitch = sho[sho['pitch_name'] == '4-Seam Fastball']
 p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
-                        mode = 'markers',
-                        name = cat,
-                        row=1, col=1))
+                        mode = 'markers'),
+                        row=1, col=1)
 
 currpitch = sho[sho['pitch_name'] == 'Sweeper']
 p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
@@ -116,17 +116,17 @@ p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_r
 currpitch = sho[sho['pitch_name'] == 'Slider']
 p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers'),
-              row=3, col=1)
+              row=2, col=1)
 
 currpitch = sho[sho['pitch_name'] == 'Curveball']
 p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers'),
-              row=3, col=2)
+              row=2, col=2)
 
 currpitch = sho[sho['pitch_name'] == 'Split-Finger']
 p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers'),
-              row=3, col=3)
+              row=2, col=3)
 
 p.update_layout(height=500, width=700,
                   title_text="Shohei Ohtani Pitches")
