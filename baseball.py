@@ -3,6 +3,7 @@ import plotly.express as px
 import pandas as pd
 import pybaseball as pbb 
 from plotly.subplots import make_subplots
+import math
 pbb.cache.enable()
 
 
@@ -144,24 +145,27 @@ def pitcher_subplots(first, last):
     PosNeg(df)
     porder = df.groupby('pitch_name')['pitch_name'].count().sort_values(ascending = False)
     porder = porder[porder > 10].index
-    for i in range(len(porder)):
-        pname = porder[i]
-        r = i // 3
-        c = i % 3
-        sbplt = make_subplots(
-            rows = r, cols = c,
-            subplot_titles = pname,
+    nrows = int(math.ceil(len(porder)/3))
+    sbplt = make_subplots(
+            rows = nrows, cols = 3,
+            subplot_titles = porder,
             shared_xaxes = True,
             shared_yaxes = True
         )
+    for i in range(len(porder)):
+        pname = porder[i]
+        r = (i // 3) + 1
+        c = (i % 3) + 1        
         for cat in ['Positive','Negative']:
             curr = df[df['Pos/Neg/Neu'] == cat]
             currpitch = curr[curr['pitch_name'] == pname]
             sbplt.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                         mode = 'markers',
-                        name = cat if pname[0] else None,
-                        marker = dict(
-                        color = 'red' if cat == 'Positive' else 'blue',
-                        showlegend = False if not pname[0] else True),
-                    row=r, col=c))
+                        name = cat,
+                        marker = dict(color = 'red' if cat == 'Positive' else 'blue'),
+                        showlegend = False if i > 0 else True),
+                    row=r, col=c)
     return sbplt
+
+plt = pitcher_subplots("shohei","ohtani")
+plt.show()
