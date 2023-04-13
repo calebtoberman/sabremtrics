@@ -85,8 +85,10 @@ def graphPitchers(first, last, startdate, enddate):
 yu = graphPitchers('Yu','Darvish','2022-04-07','2022-10-05')
 yu.show()
 
-sho = statcast_lookup("shohei","ohtani","2022-06-01","2022-07-01")
+sho = statcast_lookup("shohei","ohtani","2022-04-07","2022-10-05")
 PosNeg(sho)
+shodf = sho.groupby('pitch_name')['pitch_name'].count()
+shodf[shodf > 10].index
 
 
 
@@ -132,3 +134,34 @@ p.update_layout(height=500, width=700,
                   title_text="Shohei Ohtani Pitches")
 
 p.show()
+
+
+##write function
+
+
+def pitcher_subplots(first, last):
+    df = statcast_lookup(first, last, '2022-04-07','2022-10-05')
+    PosNeg(df)
+    porder = df.groupby('pitch_name')['pitch_name'].count().sort_values(ascending = False)
+    porder = porder[porder > 10].index
+    for i in range(len(porder)):
+        pname = porder[i]
+        r = i // 3
+        c = i % 3
+        sbplt = make_subplots(
+            rows = r, cols = c,
+            subplot_titles = pname,
+            shared_xaxes = True,
+            shared_yaxes = True
+        )
+        for cat in ['Positive','Negative']:
+            curr = df[df['Pos/Neg/Neu'] == cat]
+            currpitch = curr[curr['pitch_name'] == pname]
+            sbplt.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
+                        mode = 'markers',
+                        name = cat if pname[0] else None,
+                        marker = dict(
+                        color = 'red' if cat == 'Positive' else 'blue',
+                        showlegend = False if not pname[0] else True),
+                    row=r, col=c))
+    return sbplt

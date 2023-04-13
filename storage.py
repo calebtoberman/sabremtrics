@@ -43,7 +43,7 @@ def graphPitchers(first, last, startdate, enddate):
     PosNeg(pitcher)
     figre = go.Figure()
 
-    for cat in ['Positive', 'Negative', 'Neutral']:
+    for cat in ['Positive', 'Negative']:
         curr = pitcher[pitcher['Pos/Neg/Neu'] == cat]
 
         figre.add_trace(go.Scatter(x = curr['release_speed'], y = curr['release_spin_rate'], 
@@ -67,47 +67,61 @@ p = make_subplots(
     shared_xaxes = True,
     shared_yaxes= True)
 
-for cat in ['Positive', 'Negative', 'Neutral']:
+for cat in ['Positive', 'Negative']:
     curr = sho[sho['Pos/Neg/Neu'] == cat]
 
     currpitch = curr[curr['pitch_name'] == '4-Seam Fastball']
     p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                         mode = 'markers',
-                        name = cat),
+                        name = cat,
+                        marker = dict(
+                        color = 'red' if cat == 'Positive' else 'blue',
+                        )),
                     row=1, col=1)
 
     currpitch = curr[curr['pitch_name'] == 'Sweeper']
     p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers',
-                       name = cat),
+                       marker = dict(
+                       color = 'red' if cat == 'Positive' else 'blue'),
+                       showlegend= False),
                     row=1, col=2)
 
     currpitch = curr[curr['pitch_name'] == 'Cutter']
     p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers',
-                       name = cat),
+                       marker = dict(
+                       color = 'red' if cat == 'Positive' else 'blue'),
+                       showlegend = False),
                     row=1, col=3)
 
 
     currpitch = curr[curr['pitch_name'] == 'Slider']
     p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers',
-                       name = cat),
+                       marker = dict(
+                       color = 'red' if cat == 'Positive' else 'blue'),
+                       showlegend = False),
                     row=3, col=1)
 
     currpitch = curr[curr['pitch_name'] == 'Curveball']
     p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers',
-                       name = cat),
+                       marker = dict(
+                       color = 'red' if cat == 'Positive' else 'blue'),
+                       showlegend = False),
                     row=3, col=2)
 
     currpitch = curr[curr['pitch_name'] == 'Split-Finger']
     p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                        mode = 'markers',
-                       name = cat),
+                       marker = dict(
+                       color = 'red' if cat == 'Positive' else 'blue'),
+                       showlegend = False),
                     row=3, col=3)
 
 p.update_layout(height=500, width=700,
                   title_text="Shohei Ohtani Pitches")
 
 p.show()
+
