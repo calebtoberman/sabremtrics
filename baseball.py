@@ -79,93 +79,90 @@ def graphPitchers(first, last, startdate, enddate):
     figre.update_layout(
         title = 'Pitch Velocity vs. Spin Rate by PA Result',
         xaxis = dict(title='Pitch Velocity'),
-        yaxis = dict(title='Spin Rate')
+        yaxis = dict(title='Spin Rate'),
+        width = 500,
+        height = 800
     )
     return figre
 
 yu = graphPitchers('Yu','Darvish','2022-04-07','2022-10-05')
 yu.show()
 
-sho = statcast_lookup("shohei","ohtani","2022-04-07","2022-10-05")
-PosNeg(sho)
-shodf = sho.groupby('pitch_name')['pitch_name'].count()
-shodf[shodf > 10].index
-
-
-
-p = make_subplots(
-    rows=2, cols=3,
-    subplot_titles=("4-Seam Fastball", "Sweeper", "Cutter", "Slider",
-                    "Curveball", "Split-Finger"),
-    shared_xaxes = True,
-    shared_yaxes= True)
-
-currpitch = sho[sho['pitch_name'] == '4-Seam Fastball']
-p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
-                        mode = 'markers'),
-                        row=1, col=1)
-
-currpitch = sho[sho['pitch_name'] == 'Sweeper']
-p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
-                       mode = 'markers'),
-              row=1, col=2)
-
-currpitch = sho[sho['pitch_name'] == 'Cutter']
-p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
-                       mode = 'markers'),
-              row=1, col=3)
-
-
-currpitch = sho[sho['pitch_name'] == 'Slider']
-p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
-                       mode = 'markers'),
-              row=2, col=1)
-
-currpitch = sho[sho['pitch_name'] == 'Curveball']
-p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
-                       mode = 'markers'),
-              row=2, col=2)
-
-currpitch = sho[sho['pitch_name'] == 'Split-Finger']
-p.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
-                       mode = 'markers'),
-              row=2, col=3)
-
-p.update_layout(height=500, width=700,
-                  title_text="Shohei Ohtani Pitches")
-
-p.show()
-
 
 ##write function
+ohtani = statcast_lookup('shohei','ohtani','2022-04-07','2022-10-05')
+yudarvish = statcast_lookup('yu','darvish','2022-04-07','2022-10-05')
+dylancease = statcast_lookup('dylan','cease','2022-04-07','2022-10-05')
+coleirvin = statcast_lookup('cole','irvin','2022-04-07','2022-10-05')
+joseberrios = statcast_lookup('José','Berríos','2022-04-07','2022-10-05')
 
+finaldf = pd.concat([ohtani, yudarvish, dylancease, coleirvin, joseberrios])
 
-def pitcher_subplots(first, last):
+h = finaldf[['pitch_name', 'release_speed']].groupby('pitch_name').describe()['release_speed','mean']
+g = finaldf[['pitch_name', 'release_spin_rate']].groupby('pitch_name').describe()['release_spin_rate','mean']
+
+def pitcher_subplots(first, last, avgspeed, avgspin):
     df = statcast_lookup(first, last, '2022-04-07','2022-10-05')
     PosNeg(df)
+    speedminmax = df[['pitch_name','release_speed']].groupby('pitch_name').describe()['release_speed'][['min','max']]
+    spinmax = df[['pitch_name','release_spin_rate']].groupby('pitch_name').describe()['release_spin_rate'][['min','max']]
     porder = df.groupby('pitch_name')['pitch_name'].count().sort_values(ascending = False)
     porder = porder[porder > 10].index
     nrows = int(math.ceil(len(porder)/3))
     sbplt = make_subplots(
             rows = nrows, cols = 3,
             subplot_titles = porder,
-            shared_xaxes = True,
-            shared_yaxes = True
+            shared_xaxes = False,
+            shared_yaxes = False,
+            x_title = "Pitch Speed (mph)",
+            y_title = "Spin Rate (rpm)"
         )
     for i in range(len(porder)):
         pname = porder[i]
         r = (i // 3) + 1
         c = (i % 3) + 1        
-        for cat in ['Positive','Negative']:
+        for cat in ['Negative','Positive']:
             curr = df[df['Pos/Neg/Neu'] == cat]
             currpitch = curr[curr['pitch_name'] == pname]
             sbplt.add_trace(go.Scatter(x=currpitch['release_speed'], y=currpitch['release_spin_rate'],
                         mode = 'markers',
                         name = cat,
-                        marker = dict(color = 'red' if cat == 'Positive' else 'blue'),
+                        marker = dict(size = 3,opacity = 0.5 if cat == 'Positive' else 1, 
+                        color = 'blue' if cat == 'Positive' else 'red'),
                         showlegend = False if i > 0 else True),
                     row=r, col=c)
+            speedticks = list(range(int(speedminmax.loc[pname]['min'] - 2), int(speedminmax.loc[pname]['max'] + 2), 2))
+            smax = int(spinmax.loc[pname]['max'])
+            smin = int(spinmax.loc[pname]['min'])
+            spingap = (smax - smin) // 4
+            spinticks = list(range(smin - spingap, smax + spingap, spingap))
+            #speedticks += [avgspeed.loc[pname]]
+            #spinticks += [avgspin.loc[pname]]
+            speedticks.sort()
+            spinticks.sort()
+            sbplt.update_xaxes(tickvals = speedticks, row = r, col = c)
+            sbplt.update_yaxes(tickvals = spinticks, row = r, col = c)
+        sbplt.add_trace(go.Scatter(x = [avgspeed.loc[pname]], y = [avgspin.loc[pname]], 
+                                   showlegend = False, marker = dict(size = 10, opacity = 1,
+                                                                     symbol = 'star-dot', color = 'black')),
+                                   row = r, col = c)
+    #sbplt.update_xaxes(range = [62, 103])
+    #sbplt.update_yaxes(range=[700,3420])
+    sbplt.update_layout(title_text = first.capitalize() + " " + last.capitalize() + " Pitches in 2022 Regular Season", height  = 1000, width = 1400)
     return sbplt
 
-plt = pitcher_subplots("shohei","ohtani")
-plt.show()
+
+shohei = pitcher_subplots("Shohei","Ohtani", h , g)
+shohei.show()
+
+darvish = pitcher_subplots("Yu", "darvish", h, g)
+darvish.show()
+
+cease = pitcher_subplots("dylan", "cease", h, g)
+cease.show()
+
+irvin = pitcher_subplots("cole", "irvin", h, g)
+irvin.show()
+
+berrios = pitcher_subplots('José', 'Berríos', h, g)
+berrios.show()
